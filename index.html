@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html>
+<head>
+<!-- https://github.com/okfn/csv.js/blob/master/csv.min.js -->
+<script defer src="csv.min.js"></script>
+<style>
+  td {
+    white-space: nowrap;
+    text-align: center;
+    padding: 1px 4px;
+  }
+  tr:first-child > td {
+    white-space: initial;
+    background-color: hsl(0, 0%, 80%);
+    padding: 4px 8px;
+  }
+  tr:nth-child(2n+1) {
+    background-color: hsl(0, 0%, 90%);
+  }
+  input, label {
+    cursor: pointer;
+  }
+</style>
+</head>
+<body>
+  <button onclick="javascript:csv_to_table()">Load CSV</button>
+  <label for="cbShowImages">
+    <input type="checkbox" id="cbShowImages" onclick="csv_to_table()">Show Images
+  </label>
+  <br>
+  <br>  
+  <table id="csvTable"></table>
+  <script>
+    // csv to table (perplexity.ai): https://code-boxx.com/display-csv-table-javascript/
+    const table = document.getElementById("csvTable")
+    const cbox = document.getElementById("cbShowImages")
+
+    const csvfilename = "./Erhebungsdaten.csv"
+    const imagefilenameindex = 3
+    let csvlines = null
+
+    async function fetch_csv() {
+      const response = await fetch(csvfilename)
+      const csvdata = await response.text()
+      lines = CSV.parse(csvdata)
+      return lines
+    }
+
+    async function csv_to_table() {
+      if (!csvlines) {
+        csvlines = await fetch_csv()
+      }
+      table.innerHTML = ""
+      linecounter = 0;
+      for (let line of lines) {
+        let tr = table.insertRow()
+        cellindex = 0
+        for (let cell of line) {
+          let td = tr.insertCell()
+          td.innerHTML = cell
+          if (linecounter > 0 && cellindex == 2) {
+            imagefilebasename = line[imagefilenameindex]
+            if (imagefilebasename) {
+              imagefilename = imagefilebasename.replace('.jpeg', '-150px.jpeg')
+              imagefilepath = `./static/${imagefilename}`
+              imgelem = `<img src="${imagefilepath}"/>`
+              if (cbox.checked) {
+                td.innerHTML = imgelem
+              }
+            }
+          }
+          cellindex++
+        }
+        linecounter++
+        if (linecounter > 3) { 
+          //break 
+        }
+      }
+    }
+
+    csv_to_table();
+  </script>
+</body>
+</html>
